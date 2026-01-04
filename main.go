@@ -35,22 +35,39 @@ func main() {
 
 func updateRichPresence(clientrp *DiscordClient) {
 	info := exec.Command("osascript", "-e", `
-tell application "Music"
-	set trackName to name of current track
-	set trackArtist to artist of current track
-	set trackAlbum to album of current track
-	set playerPosition to player position
-	set trackDuration to duration of current track
+on is_running(appName)
+	tell application "System Events" to (name of processes) contains appName
+end is_running
 
-	set rPosition to (round(playerPosition * 100)) / 100
-	set rDuration to (round(trackDuration * 100)) / 100
-	
-	return trackName & "|" & trackArtist & "|" & rPosition & "|" & rDuration
-end tell
+set safRunning to is_running("Music")
+if safRunning is true then
+	tell application "Music"
+		set trackName to name of current track
+		set trackArtist to artist of current track
+		set trackAlbum to album of current track
+		set playerPosition to player position
+		set trackDuration to duration of current track
+		
+		set rPosition to (round (playerPosition * 100)) / 100
+		set rDuration to (round (trackDuration * 100)) / 100
+		
+		return trackName & "|" & trackArtist & "|" & rPosition & "|" & rDuration
+	end tell
+else
+	return "App not running... Waiting for it to load"
+end if
 	`)
 	output, err := info.Output()
 	if err != nil {
 		fmt.Println("Error retrieving track name:", err)
+		return
+	}
+	if strings.Contains(string(output), "App not running") {
+		fmt.Println("Music app is not running. Clearing Discord Rich Presence.")
+		err := clientrp.ClearActivity()
+		if err != nil {
+			panic(err)
+		}
 		return
 	}
 
