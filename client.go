@@ -14,6 +14,7 @@ type DiscordClient struct {
 	ClientID       string
 	Conn           net.Conn
 	activityLoaded bool
+	pipePath       string
 }
 
 type Activity struct {
@@ -57,6 +58,7 @@ func NewClient(clientID string) (*DiscordClient, error) {
 		ClientID:       clientID,
 		Conn:           conn,
 		activityLoaded: true,
+		pipePath:       pipePath,
 	}
 
 	handshake := map[string]string{
@@ -78,7 +80,58 @@ func NewClient(clientID string) (*DiscordClient, error) {
 	return client, nil
 }
 
+func (c *DiscordClient) refreshPipe() error {
+
+	if c.Conn != nil {
+		c.Conn.SetReadDeadline(time.Now().Add(50 * time.Millisecond))
+		one := make([]byte, 1)
+		_, err := c.Conn.Read(one)
+		c.Conn.SetReadDeadline(time.Time{})
+
+		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+			return nil
+		}
+	}
+
+	fmt.Println("Discord connection lost, reconnecting...")
+
+	if c.Conn != nil {
+		c.Conn.Close()
+	}
+
+	pipePath := getDiscordPipe()
+	if pipePath == "" {
+		return fmt.Errorf("no Discord pipe found")
+	}
+
+	conn, err := net.Dial("unix", pipePath)
+	if err != nil {
+		return fmt.Errorf("error reconnecting: %w", err)
+	}
+	c.Conn = conn
+	c.pipePath = pipePath
+
+	handshake := map[string]string{
+		"v":         "1",
+		"client_id": c.ClientID,
+	}
+
+	if err := c.sendPayload(0, handshake); err != nil {
+		c.Close()
+		return fmt.Errorf("handshake failed: %w", err)
+	}
+
+	if _, err := c.readPayload(); err != nil {
+		c.Close()
+		return fmt.Errorf("handshake response failed: %w", err)
+	}
+
+	fmt.Println("Reconnected to Discord!")
+	return nil
+}
+
 func (c *DiscordClient) SetActivity(activity Activity) error {
+	c.refreshPipe()
 	fActivity := Payload{
 		Cmd:   "SET_ACTIVITY",
 		Nonce: fmt.Sprintf("%d", time.Now().Unix()),
@@ -102,9 +155,14 @@ func (c *DiscordClient) SetActivity(activity Activity) error {
 }
 
 func (c *DiscordClient) ClearActivity() error {
+	if err := c.refreshPipe(); err != nil {
+		return fmt.Errorf("failed to refresh pipe: %w", err)
+	}
+
 	if !c.activityLoaded {
 		return nil
 	}
+
 	c.activityLoaded = false
 	payload := map[string]interface{}{
 		"cmd": "SET_ACTIVITY",
