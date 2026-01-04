@@ -41,6 +41,6 @@ To do so:
 :warning: Make sure to replace YOUR_USER by your actual macOS user...
 
 4. Save the file
-5. The app should ask you few permissions to access the Music app and bim<br/>
+5. The app should ask you few permissions to access the Music app and the System Events and bim<br/>
 
 <img width="457" height="198" alt="image" src="https://github.com/user-attachments/assets/dc5a113b-acc8-487e-b743-23bbcaeceaab" />
