@@ -11,8 +11,9 @@ import (
 )
 
 type DiscordClient struct {
-	ClientID string
-	Conn     net.Conn
+	ClientID       string
+	Conn           net.Conn
+	activityLoaded bool
 }
 
 type Activity struct {
@@ -53,8 +54,9 @@ func NewClient(clientID string) (*DiscordClient, error) {
 	}
 
 	client := &DiscordClient{
-		ClientID: clientID,
-		Conn:     conn,
+		ClientID:       clientID,
+		Conn:           conn,
+		activityLoaded: true,
 	}
 
 	handshake := map[string]string{
@@ -86,6 +88,8 @@ func (c *DiscordClient) SetActivity(activity Activity) error {
 		},
 	}
 
+	c.activityLoaded = true
+
 	if err := c.sendPayload(1, fActivity); err != nil {
 		return err
 	}
@@ -95,6 +99,28 @@ func (c *DiscordClient) SetActivity(activity Activity) error {
 	}
 
 	return nil
+}
+
+func (c *DiscordClient) ClearActivity() error {
+	if !c.activityLoaded {
+		return nil
+	}
+	c.activityLoaded = false
+	payload := map[string]interface{}{
+		"cmd": "SET_ACTIVITY",
+		"args": map[string]interface{}{
+			"pid":      os.Getpid(),
+			"activity": nil,
+		},
+		"nonce": fmt.Sprintf("%d", time.Now().Unix()),
+	}
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.Conn.Write(append([]byte{1, 0, 0, 0}, data...))
+	return err
 }
 
 func (c *DiscordClient) sendPayload(opcode int, data interface{}) error {
