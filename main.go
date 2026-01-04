@@ -78,7 +78,7 @@ end if
 	fmt.Println("Position (s):", informations[2])
 	fmt.Println("Duration (s):", informations[3])
 
-	searchURL := "https://itunes.apple.com/search?term=" + url.QueryEscape(informations[0]+" "+informations[1]) + "&entity=song&limit=1"
+	searchURL := "https://itunes.apple.com/search?term=" + url.QueryEscape(informations[0]+" "+informations[1]+" "+informations[4]) + "&entity=song&limit=1"
 	resp, err := http.Get(searchURL)
 	if err != nil {
 		panic(err)
@@ -106,11 +106,11 @@ end if
 
 	clientrp.SetActivity(Activity{
 		Type:    2,
-		Details: informations[4],
+		Details: informations[0],
 		State:   "by " + informations[1],
 		Assets: Assets{
 			LargeImage: artworkURL,
-			LargeText:  informations[1],
+			LargeText:  informations[4],
 		},
 		Timestamps: Timestamps{
 			Start: time.Now().Unix() - int64(position),
