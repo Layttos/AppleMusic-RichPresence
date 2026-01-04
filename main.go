@@ -51,7 +51,7 @@ if appRunning is true then
 		set rPosition to (round (playerPosition * 100)) / 100
 		set rDuration to (round (trackDuration * 100)) / 100
 		
-		return trackName & "|" & trackArtist & "|" & rPosition & "|" & rDuration
+		return trackName & "|" & trackArtist & "|" & rPosition & "|" & rDuration & "|" trackAlbum
 	end tell
 else
 	return "App not running... Waiting for it to load"
@@ -106,11 +106,11 @@ end if
 
 	clientrp.SetActivity(Activity{
 		Type:    2,
-		Details: informations[0],
+		Details: informations[4],
 		State:   "by " + informations[1],
 		Assets: Assets{
 			LargeImage: artworkURL,
-			LargeText:  informations[0],
+			LargeText:  informations[1],
 		},
 		Timestamps: Timestamps{
 			Start: time.Now().Unix() - int64(position),
