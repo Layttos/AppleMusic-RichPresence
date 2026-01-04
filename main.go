@@ -51,7 +51,7 @@ if appRunning is true then
 		set rPosition to (round (playerPosition * 100)) / 100
 		set rDuration to (round (trackDuration * 100)) / 100
 		
-		return trackName & "|" & trackArtist & "|" & rPosition & "|" & rDuration & "|" trackAlbum
+		return trackName & "|" & trackArtist & "|" & rPosition & "|" & rDuration & "|" & trackAlbum
 	end tell
 else
 	return "App not running... Waiting for it to load"
