@@ -14,8 +14,10 @@ You can run this app in the background of your computer.
 To do so:
 
 1. Open your terminal
-2. Go to `/Users/YOUR_USER/Library/LaunchAgents/`
-3. Create a file "AM-RP.plist" and put this in it:
+2. Go to the project directory and build the project with `go build -o AM-RP`
+3. Put the file that's been created (it should be `AM-RP`) in `~/go/bin`
+4. Go to `/Users/YOUR_USER/Library/LaunchAgents/`
+5. Create a file "AM-RP.plist" and put this in it:
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
