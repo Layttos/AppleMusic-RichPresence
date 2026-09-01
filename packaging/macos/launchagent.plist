@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>@BUNDLE_ID@</string>
+
+	<key>ProgramArguments</key>
+	<array>
+		<string>@BINARY_PATH@</string>
+		<string>-headless</string>
+	</array>
+
+	<key>RunAtLoad</key>
+	<true/>
+
+	<!-- The daemon waits for Discord on its own now, so a restart is only for
+	     genuine crashes. Throttling keeps a persistent failure from becoming a
+	     restart loop. -->
+	<key>KeepAlive</key>
+	<dict>
+		<key>SuccessfulExit</key>
+		<false/>
+	</dict>
+	<key>ThrottleInterval</key>
+	<integer>30</integer>
+
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>LowPriorityIO</key>
+	<true/>
+
+	<key>StandardOutPath</key>
+	<string>@LOG_DIR@/applemusic-rp.log</string>
+	<key>StandardErrorPath</key>
+	<string>@LOG_DIR@/applemusic-rp.log</string>
+</dict>
+</plist>

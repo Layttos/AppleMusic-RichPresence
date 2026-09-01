@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>@APP_NAME@</string>
+	<key>CFBundleDisplayName</key>
+	<string>Apple Music Rich Presence</string>
+	<key>CFBundleIdentifier</key>
+	<string>@BUNDLE_ID@</string>
+	<key>CFBundleExecutable</key>
+	<string>@BINARY@</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@VERSION@</string>
+	<key>CFBundleVersion</key>
+	<string>@VERSION@</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>11.0</string>
+
+	<!-- The app lives in the menu bar, so it must not take a Dock tile or a
+	     menu of its own. -->
+	<key>LSUIElement</key>
+	<true/>
+
+	<!-- Shown in the permission prompt when the app first asks to control
+	     Apple Music. Without this key macOS refuses the Apple Event outright,
+	     which is one way the presence silently never appears. -->
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Apple Music Rich Presence reads the track you are playing so it can show it on your Discord profile.</string>
+</dict>
+</plist>
