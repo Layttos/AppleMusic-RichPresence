@@ -1,2 +1,5 @@
 # Build output
 /dist/
+
+# Windows resources, written by `make syso`
+/resource_windows_amd64.syso

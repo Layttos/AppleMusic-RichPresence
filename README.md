@@ -26,16 +26,32 @@ then pick `AppleMusicRP`.
 
 ### Windows
 
-```bash
-make windows
+Run `AppleMusicRP-Setup-<version>.exe`. It installs into your own profile, so
+Windows does not ask for administrator rights, and it offers to start the app
+when you sign in. Nothing else is needed: Apple Music and iTunes both report to
+the system media controls, which is where the app reads from.
+
+The icon appears in the notification area, next to the clock.
+
+To build the installer yourself:
+
+```powershell
+.\build-windows.ps1
 ```
 
-Run `dist\applemusic-rp.exe`. The icon appears in the notification area, next to
-the clock. Nothing else is needed: Apple Music and iTunes both report to the
-system media controls, which is where the app reads from.
+That needs [Inno Setup](https://jrsoftware.org/isinfo.php), which is one command
+away — `winget install JRSoftware.InnoSetup` — and leaves both the executable
+and the installer in `dist\`.
 
-To start it at login, press <kbd>Win</kbd>+<kbd>R</kbd>, run `shell:startup`, and
-put a shortcut to the executable in the folder that opens.
+**Removing it.** *Settings → Apps → Installed apps → Apple Music Rich
+Presence → Uninstall*, or the *Uninstall Apple Music Rich Presence* shortcut in
+the Start menu, or `unins000.exe` in the install folder. Any of the three takes
+away the files, the shortcuts and the autostart entry.
+
+If you would rather not install anything, `make windows` still produces a
+standalone `dist\applemusic-rp.exe` that runs from wherever you put it. To start
+that one at login, press <kbd>Win</kbd>+<kbd>R</kbd>, run `shell:startup`, and
+put a shortcut to it in the folder that opens.
 
 ### Headless (no icon)
 
@@ -76,7 +92,14 @@ line tools (`xcode-select --install`); the `notray` build does not.
 ```bash
 make check    # gofmt, go vet for macOS and Windows, and the tests
 make build    # a plain binary for the current platform
+make icons    # rasterise internal/ui/icon.svg after changing the artwork
 ```
+
+The artwork is a single SVG. `make icons` turns it into the template PNG the
+menu bar wants and the multi-size ICO Windows wants, and `make syso` writes the
+icon, the manifest and the version information into the object file the Go
+linker folds into the executable. Both are plain Go: building for Windows needs
+no resource compiler, and swapping in a different SVG needs no code change.
 
 ---
 
@@ -139,3 +162,6 @@ Run from a terminal with `-v` to see every poll. The LaunchAgent writes to
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+The icon is *music-notes* from [Phosphor Icons](https://phosphoricons.com), also
+MIT; the licence text is in [NOTICE](NOTICE).

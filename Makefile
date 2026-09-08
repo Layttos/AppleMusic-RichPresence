@@ -5,6 +5,9 @@
 
 BINARY      := applemusic-rp
 APP_NAME    := AppleMusicRP
+DISPLAY_NAME := Apple Music Rich Presence
+PUBLISHER   := Layttos
+SUMMARY     := Shows the track playing in Apple Music on your Discord profile
 BUNDLE_ID   := dev.layttos.applemusic-rp
 VERSION     ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 DIST        := dist
@@ -13,7 +16,7 @@ DIST        := dist
 # in the daemon needs them at runtime.
 LDFLAGS     := -s -w -X main.version=$(VERSION)
 
-.PHONY: all build test vet fmt check clean mac-app windows headless install-mac uninstall-mac icons
+.PHONY: all build test vet fmt check clean mac-app windows windows-installer syso headless install-mac uninstall-mac icons
 
 all: check build
 
@@ -39,7 +42,7 @@ fmt:
 
 check: fmt vet test
 
-## icons: regenerate the tray artwork
+## icons: rasterise internal/ui/icon.svg into the PNG and ICO the program embeds
 icons:
 	go run ./tools/genicons internal/ui
 
@@ -70,13 +73,34 @@ icns:
 	@iconutil -c icns "$(DIST)/AppIcon.iconset" -o "$(DIST)/$(APP_NAME).app/Contents/Resources/AppIcon.icns" 2>/dev/null || true
 	@rm -rf "$(DIST)/AppIcon.iconset"
 
-## windows: cross-compile the Windows executable
+## syso: the executable's own icon, manifest and version information
+# The Go linker picks up any *.syso sitting in the package directory. The name
+# pins this one to Windows on amd64, so every other build ignores it.
+syso:
+	go run ./tools/gensyso \
+		-ico internal/ui/icon.ico \
+		-manifest packaging/windows/app.manifest \
+		-o resource_windows_amd64.syso \
+		-version "$(VERSION)" \
+		-company "$(PUBLISHER)" \
+		-product "$(DISPLAY_NAME)" \
+		-description "$(SUMMARY)" \
+		-copyright "MIT licence" \
+		-filename "$(BINARY).exe"
+
+## windows: cross-compile the Windows executable, icon and all
 # -H windowsgui suppresses the console window, which a tray application must not
 # leave sitting behind it.
-windows:
+windows: syso
 	GOOS=windows GOARCH=amd64 go build -ldflags "$(LDFLAGS) -H windowsgui" -o $(DIST)/$(BINARY).exe .
 	@echo "built $(DIST)/$(BINARY).exe"
 	@echo "to start it with Windows, put a shortcut in the folder that opens with:  shell:startup"
+
+## windows-installer: build the installer; needs Windows, PowerShell and Inno Setup
+# The wrapper does the same three steps as `make windows` before calling the
+# Inno Setup compiler, so it is the single command to run on Windows.
+windows-installer:
+	powershell -NoProfile -ExecutionPolicy Bypass -File ./build-windows.ps1
 
 ## install-mac: install the headless daemon as a per-user LaunchAgent
 install-mac: headless
@@ -98,4 +122,4 @@ uninstall-mac:
 	@echo "removed"
 
 clean:
-	rm -rf $(DIST)
+	rm -rf $(DIST) resource_windows_amd64.syso
